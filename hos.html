@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Registration</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.6.1/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>Hospital Registration and Retrieval</h1>
+
+    <h2>Store Hospital Details</h2>
+    <form id="storeForm">
+        <label for="hospitalId">Hospital ID:</label>
+        <input type="number" id="hospitalId" required><br><br>
+        
+        <label for="hospitalName">Hospital Name:</label>
+        <input type="text" id="hospitalName" required><br><br>
+
+        <label for="hospitalAddress">Hospital Address:</label>
+        <input type="text" id="hospitalAddress" required><br><br>
+
+        <label for="hospitalSpec">Hospital Specialization:</label>
+        <input type="text" id="hospitalSpec" required><br><br>
+
+        <button type="submit">Store Hospital Details</button>
+    </form>
+
+    <hr>
+
+    <h2>Retrieve Hospital Details</h2>
+    <form id="retrieveForm">
+        <label for="retrieveHospitalId">Hospital ID:</label>
+        <input type="number" id="retrieveHospitalId" required><br><br>
+        
+        <button type="submit">Retrieve Details</button>
+    </form>
+
+    <h3>Hospital Details:</h3>
+    <p id="hospitalDetails"></p>
+
+    <script>
+        // Ensure Web3.js is connected to the browser
+        if (typeof window.ethereum !== 'undefined') {
+            var web3 = new Web3(window.ethereum);
+        } else {
+            alert("Please install MetaMask!");
+        }
+
+        let contract;
+        const hospitalAbi = [
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "hospital_id",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "_hospital_name",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "_hospital_address",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "_hospital_spec",
+                        "type": "string"
+                    }
+                ],
+                "name": "store_doctor_details",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "hospital_id",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "retreive_hospital_details",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
+
+        const contractAddress = "0xc22fbf84b028EE7E23B49EB99152e012EE497A5F"; // Replace with your contract address
+        contract = new web3.eth.Contract(hospitalAbi, contractAddress);
+
+        // Listen for form submission to store hospital details
+        document.getElementById("storeForm").addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const accounts = await web3.eth.getAccounts();
+            const hospitalId = document.getElementById("hospitalId").value;
+            const hospitalName = document.getElementById("hospitalName").value;
+            const hospitalAddress = document.getElementById("hospitalAddress").value;
+            const hospitalSpec = document.getElementById("hospitalSpec").value;
+
+            // Call the contract method to store hospital details
+            contract.methods.store_doctor_details(
+                hospitalId, hospitalName, hospitalAddress, hospitalSpec
+            ).send({ from: accounts[0] })
+            .on('transactionHash', (hash) => {
+                console.log('Transaction sent with hash:', hash);
+                alert("Hospital details stored!");
+            })
+            .on('error', (error) => {
+                console.error('Error storing details:', error);
+                alert("Error storing hospital details.");
+            });
+        });
+
+        // Listen for form submission to retrieve hospital details
+        document.getElementById("retrieveForm").addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const hospitalId = document.getElementById("retrieveHospitalId").value;
+
+            // Call the contract method to retrieve hospital details
+            contract.methods.retreive_hospital_details(hospitalId).call()
+            .then((result) => {
+                const [hospitalName, hospitalAddress, hospitalSpec] = result;
+                document.getElementById("hospitalDetails").innerHTML = `
+                    <strong>Name:</strong> ${hospitalName}<br>
+                    <strong>Address:</strong> ${hospitalAddress}<br>
+                    <strong>Specialization:</strong> ${hospitalSpec}
+                `;
+            })
+            .catch((error) => {
+                console.error('Error retrieving details:', error);
+                alert("Error retrieving hospital details.");
+            });
+        });
+    </script>
+</body>
+</html>

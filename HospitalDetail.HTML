@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Details</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.2.8/dist/web3.js"></script>
+</head>
+<body>
+    <p>
+        <a href="Hospital.HTML"><button type="submit" class="hidden" style='margin-right:16px'>Hospital Registration</button></a>
+        <a href="Doctor.HTML"><button type="submit" class="hidden" style='margin-right:16px'>Doctor Registration</button></a>
+        <a href="Patient.HTML"><button type="submit" class="hidden" style='margin-right:16px'>Patient Registration</button></a>
+        <a href="PatientDetails.HTML"><button type="submit" class="hidden" style='margin-right:16px'>View Patient Details</button></a>
+        <a href="RecordDetails.HTML"><button type="submit" class="hidden" style='margin-right:16px'>View Medical Record</button></a>
+        <a href="xExamineDetails.HTML"><button type="submit" class="hidden" style='margin-right:16px'>View Patient Examine details</button></a>
+    </p>
+
+    <h1>Display Hospital Details</h1>
+
+    <script>
+        var account;
+
+        window.addEventListener('load', async () => {
+            if (typeof window.ethereum !== 'undefined') {
+                console.log("MetaMask is Available :) !");
+            }
+
+            // Modern DApp browsers
+            if (window.ethereum) {
+                window.web3 = new Web3(ethereum);
+                
+                // To prevent the page reloading when the MetaMask network changes
+                ethereum.autoRefreshOnNetworkChange = false;
+                
+                // To Capture the account details from MetaMask
+                try {
+                    const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+                    account = accounts[0];
+                    console.log("Connected Account:", account);
+                } catch (error) {
+                    console.error("User denied account access");
+                }
+            }
+            // Legacy DApp browsers
+            else if (window.web3) {
+                window.web3 = new Web3(new Web3.providers.HttpProvider("https://ropsten.infura.io/v3/cbd9dc11b30147e9a2cc974be655ef7c"));
+            }
+            // Non-DApp browsers
+            else {
+                console.log('Non-Ethereum browser detected. Please install MetaMask');
+            }
+        });
+
+        // Smart contract ABI
+        var abi = [
+            {
+                "inputs": [
+                    { "internalType": "uint256", "name": "hospital_id", "type": "uint256" },
+                    { "internalType": "string", "name": "_hospital_name", "type": "string" },
+                    { "internalType": "string", "name": "_hospital_address", "type": "string" },
+                    { "internalType": "string", "name": "_hospital_spec", "type": "string" }
+                ],
+                "name": "store_doctor_details",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "stateMutability": "nonpayable",
+                "type": "constructor"
+            },
+            {
+                "inputs": [
+                    { "internalType": "uint256", "name": "hospital_id", "type": "uint256" }
+                ],
+                "name": "retreive_hospital_details",
+                "outputs": [
+                    { "internalType": "string", "name": "", "type": "string" },
+                    { "internalType": "string", "name": "", "type": "string" },
+                    { "internalType": "string", "name": "", "type": "string" }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
+
+        var contractaddress = '0xc22fbf84b028EE7E23B49EB99152e012EE497A5F';
+
+        function show_details() {
+            var myContract = new web3.eth.Contract(abi, contractaddress, { from: account, gasPrice: '5000000', gas: '5000000' });
+            var idd = document.getElementById("tid").value;
+
+            if (!idd) {
+                alert("Please enter a Hospital ID");
+                return;
+            }
+
+            myContract.methods.retreive_hospital_details(idd).call().then(function(result) {
+                console.log(result);  // Debugging: Check the result in the console
+                if (result && result.length === 3) { // Ensure result has the expected 3 values
+                    document.getElementById("get_name").innerHTML = result[0] || 'Not Available';
+                    document.getElementById("get_addr").innerHTML = result[1] || 'Not Available';
+                    document.getElementById("get_spec").innerHTML = result[2] || 'Not Available';
+                } else {
+                    console.log("Invalid result from smart contract");
+                    alert("No details found for the given Hospital ID");
+                }
+            }).catch(function(error) {
+                console.log("Error retrieving hospital details:", error);
+                alert("An error occurred while retrieving hospital details");
+            });
+        }
+    </script>
+
+    <h3>Hospital Details:</h3>
+    <form>
+        <table style="width:25%">
+            <tr>
+                <td>Enter Hospital Id:</td>
+                <td><input type="text" id="tid" name="tid"></td>
+            </tr>
+            <tr>
+                <td><input type="button" onclick="show_details()" value="Get Details"></td>
+            </tr>
+            <tr>
+                <td>Hospital Name:</td>
+                <td><div id="get_name"></div></td>
+            </tr>
+            <tr>
+                <td>Hospital Address:</td>
+                <td><div id="get_addr"></div></td>
+            </tr>
+            <tr>
+                <td>Hospital Specification:</td>
+                <td><div id="get_spec"></div></td>
+            </tr>
+        </table>
+    </form>
+</body>
+</html>
