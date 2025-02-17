@@ -7,4 +7,4 @@ Healthcare personnel may easily access, edit, and share patient information than
 The system developed using the Ethereum network using Ganache. 
 The measured approach is to store patients data and execute functions in a decentralized system using blockchain smart contracts.
 
-                                COMPILED THE PROGRAM USING TRUFFLE AND DEPLOYED IN BLOCKCHAIN USING METAMASK WITH THE HELP OF HTML PAGES
+                   COMPILED THE PROGRAM USING TRUFFLE AND DEPLOYED IN BLOCKCHAIN USING METAMASK WITH THE HELP OF HTML PAGES
